@@ -1,0 +1,1193 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Sprint Task Creator</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<style>
+/* ══════════════════════════════════════════
+   THEME VARIABLES
+══════════════════════════════════════════ */
+:root{
+    --bg:#0f172a;--bg2:#1e293b;--bg3:#0f172a;
+    --card:rgba(255,255,255,.05);--card2:rgba(255,255,255,.03);
+    --inp:rgba(0,0,0,.35);--inp2:rgba(0,0,0,.25);
+    --b:rgba(255,255,255,.1);--bs:rgba(255,255,255,.18);
+    --t:#f1f5f9;--ts:#e2e8f0;--tm:#94a3b8;--td:#64748b;
+    --acc:#6366f1;--acc2:#8b5cf6;
+    --th-bg:#0f172a;--th-txt:#94a3b8;
+    --row-even:rgba(255,255,255,.025);--row-hover:rgba(99,102,241,.08);
+    --cell-on:rgba(99,102,241,.18);--cell-border:rgba(99,102,241,.4);
+    --sh:rgba(0,0,0,.5);
+    --topbar:rgba(15,23,42,.97);
+}
+body.light{
+    --bg:#f1f5f9;--bg2:#ffffff;--bg3:#e2e8f0;
+    --card:rgba(255,255,255,.9);--card2:rgba(241,245,249,.8);
+    --inp:#ffffff;--inp2:#f8fafc;
+    --b:#e2e8f0;--bs:#cbd5e1;
+    --t:#0f172a;--ts:#1e293b;--tm:#64748b;--td:#94a3b8;
+    --acc:#4f46e5;--acc2:#7c3aed;
+    --th-bg:#e2e8f0;--th-txt:#475569;
+    --row-even:rgba(0,0,0,.02);--row-hover:rgba(99,102,241,.06);
+    --cell-on:rgba(99,102,241,.12);--cell-border:rgba(79,70,229,.5);
+    --sh:rgba(0,0,0,.15);
+    --topbar:#ffffff;
+}
+
+*{margin:0;padding:0;box-sizing:border-box;}
+body{font-family:'Inter',sans-serif;background:var(--bg);color:var(--t);min-height:100vh;font-size:14px;
+    transition:background .2s,color .2s;}
+
+/* ── TOPBAR ── */
+.topbar{background:var(--topbar);border-bottom:1px solid var(--b);padding:9px 20px;
+    display:flex;align-items:center;justify-content:space-between;
+    position:sticky;top:0;z-index:300;backdrop-filter:blur(10px);
+    box-shadow:0 1px 8px var(--sh);}
+.topbar-title{font-size:1rem;font-weight:700;background:linear-gradient(135deg,#6366f1,#8b5cf6);
+    -webkit-background-clip:text;-webkit-text-fill-color:transparent;}
+.topbar-right{display:flex;align-items:center;gap:8px;flex-wrap:wrap;}
+
+/* theme toggle */
+.theme-btn{
+    display:flex;align-items:center;gap:5px;padding:4px 11px;border-radius:20px;
+    border:1px solid var(--bs);background:var(--card);color:var(--ts);
+    cursor:pointer;font-size:.7rem;font-weight:600;font-family:'Inter',sans-serif;
+    transition:all .2s;
+}
+.theme-btn:hover{border-color:var(--acc);background:var(--row-hover);}
+
+/* ── BADGE ── */
+.badge{display:inline-flex;align-items:center;gap:5px;padding:4px 10px;border-radius:7px;font-size:.7rem;font-weight:600;}
+.b-ok  {background:rgba(16,185,129,.15);color:#34d399;border:1px solid rgba(16,185,129,.3);}
+.b-err {background:rgba(239,68,68,.15); color:#f87171;border:1px solid rgba(239,68,68,.3);}
+.b-info{background:rgba(99,102,241,.15);color:#a5b4fc;border:1px solid rgba(99,102,241,.3);}
+body.light .b-ok {color:#065f46;}
+body.light .b-info{color:#3730a3;}
+
+/* ── MAIN ── */
+.main{padding:16px 20px;max-width:100%;margin:0 auto;}
+
+/* ── PANEL ── */
+.panel{background:var(--card);border:1px solid var(--b);border-radius:12px;padding:16px 18px;margin-bottom:14px;
+    box-shadow:0 2px 8px var(--sh);}
+.panel-title{font-size:.8rem;font-weight:600;color:var(--acc);margin-bottom:12px;display:flex;align-items:center;gap:8px;}
+.recon-btn{margin-left:auto;font-size:.63rem;background:var(--row-hover);
+    border:1px solid var(--b);color:var(--tm);padding:3px 9px;border-radius:6px;cursor:pointer;font-family:'Inter',sans-serif;}
+.recon-btn:hover{border-color:var(--acc);color:var(--acc);}
+
+/* ── FIELDS ── */
+.fg{display:grid;gap:12px;align-items:end;}
+.fg-3{grid-template-columns:1.5fr 1.4fr 1fr;}
+@media(max-width:820px){.fg-3{grid-template-columns:1fr;}}
+.field{display:flex;flex-direction:column;gap:3px;}
+.field label{font-size:.66rem;color:var(--tm);font-weight:500;}
+.field input,.field select{width:100%;background:var(--inp);border:1px solid var(--bs);
+    border-radius:7px;padding:7px 11px;color:var(--t);font-size:.77rem;
+    font-family:'Inter',sans-serif;outline:none;transition:border-color .2s;}
+.field input:focus,.field select:focus{border-color:var(--acc);}
+.field input::placeholder{color:var(--td);}
+.pat-wrap{position:relative;}
+.pat-wrap input{padding-right:34px;}
+.pat-eye{position:absolute;right:9px;top:50%;transform:translateY(-50%);
+    background:none;border:none;cursor:pointer;color:var(--tm);font-size:.88rem;padding:2px;}
+
+/* ── BUTTONS ── */
+.btn{padding:7px 15px;border-radius:8px;border:none;cursor:pointer;font-size:.76rem;
+    font-weight:600;font-family:'Inter',sans-serif;transition:all .2s;white-space:nowrap;}
+.btn-primary{background:linear-gradient(135deg,#6366f1,#8b5cf6);color:#fff;}
+.btn-primary:hover{opacity:.85;transform:translateY(-1px);}
+.btn-primary:disabled{opacity:.4;cursor:not-allowed;transform:none;}
+.btn-success{background:linear-gradient(135deg,#10b981,#059669);color:#fff;padding:9px 22px;font-size:.83rem;}
+.btn-success:hover{opacity:.85;transform:translateY(-1px);}
+.btn-success:disabled{opacity:.4;cursor:not-allowed;transform:none;}
+.btn-ghost{background:var(--card2);color:var(--ts);border:1px solid var(--bs);}
+.btn-ghost:hover{border-color:var(--acc);color:var(--acc);}
+.btn-xs{padding:2px 7px;font-size:.6rem;border-radius:5px;}
+.btn-sm{padding:4px 11px;font-size:.7rem;}
+
+/* ── PROJECT CHIPS ── */
+#projectList{display:flex;flex-wrap:wrap;gap:6px;align-items:center;margin-top:10px;}
+.proj-chip{display:inline-flex;align-items:center;gap:5px;padding:5px 12px;border-radius:20px;
+    font-size:.7rem;font-weight:500;cursor:pointer;
+    background:rgba(99,102,241,.08);border:1.5px solid rgba(99,102,241,.18);color:var(--acc);
+    transition:all .15s;user-select:none;}
+.proj-chip:hover{background:rgba(99,102,241,.16);}
+.proj-chip.sel{background:rgba(99,102,241,.22);border-color:var(--acc);font-weight:600;}
+.proj-chip .dot{width:6px;height:6px;border-radius:50%;background:var(--acc);flex-shrink:0;}
+.proj-chip.sel .dot{background:#34d399;}
+
+/* ── ITERATION SELECT ── */
+#iterSelect{width:100%;max-width:440px;background:var(--inp);border:1px solid var(--bs);
+    border-radius:7px;padding:7px 11px;color:var(--t);font-size:.77rem;
+    font-family:'Inter',sans-serif;outline:none;}
+#iterSelect:focus{border-color:var(--acc);}
+#iterSelect optgroup{font-style:normal;font-weight:600;}
+#iterSelect option{background:var(--bg2);}
+
+/* ── SCREENS ── */
+#reqScreen{display:none;}
+
+/* ══════════════════════════════════════════
+   EXCEL TABLE
+══════════════════════════════════════════ */
+.excel-wrap{overflow-x:auto;border-radius:10px;border:1px solid var(--b);
+    box-shadow:0 2px 12px var(--sh);}
+.excel-wrap::-webkit-scrollbar{height:7px;width:7px;}
+.excel-wrap::-webkit-scrollbar-track{background:transparent;}
+.excel-wrap::-webkit-scrollbar-thumb{background:var(--bs);border-radius:4px;}
+
+.excel-tbl{border-collapse:collapse;font-size:.72rem;min-width:max-content;width:100%;}
+
+/* sticky info columns */
+.excel-tbl th, .excel-tbl td{border:1px solid var(--b);padding:0;}
+.col-sticky{position:sticky;left:0;z-index:2;background:var(--bg2);}
+body.light .col-sticky{background:#ffffff;}
+
+/* fixed-width info cells */
+.excel-tbl td.c-num,
+.excel-tbl th.c-num   {width:34px;min-width:34px;max-width:34px;}
+.excel-tbl td.c-id,
+.excel-tbl th.c-id    {width:60px;min-width:60px;}
+.excel-tbl td.c-title,
+.excel-tbl th.c-title {width:180px;min-width:140px;max-width:200px;}
+.excel-tbl td.c-state,
+.excel-tbl th.c-state {width:76px;min-width:70px;}
+.excel-tbl td.c-tag,
+.excel-tbl th.c-tag   {width:100px;min-width:80px;}
+.excel-tbl td.c-res,
+.excel-tbl th.c-res   {width:90px;min-width:80px;}
+
+/* HEADER ROW */
+.excel-tbl thead tr:first-child th{
+    background:var(--th-bg);color:var(--th-txt);
+    font-size:.6rem;font-weight:600;text-transform:uppercase;letter-spacing:.03em;
+    padding:6px 5px;white-space:normal;top:0;position:sticky;z-index:3;
+}
+body.light .excel-tbl thead tr:first-child th{background:#e2e8f0;color:#475569;}
+
+/* HORIZONTAL header for task type columns — word-wrap, compact */
+.th-vert{
+    width:60px;min-width:60px;max-width:80px;
+    height:auto;vertical-align:bottom;padding:6px 5px !important;
+    position:sticky;top:0;z-index:3;background:var(--th-bg);
+}
+body.light .th-vert{background:#e2e8f0;}
+.th-vert-inner{
+    display:block;
+    writing-mode:horizontal-tb;
+    transform:none;
+    font-size:.58rem;font-weight:600;color:var(--th-txt);
+    text-transform:none;letter-spacing:0;
+    line-height:1.2;white-space:normal;word-break:break-word;
+    text-align:center;
+}
+/* disc colour accent on header — dark theme */
+.th-vert.d-dev  .th-vert-inner{color:#a5b4fc;}
+.th-vert.d-test .th-vert-inner{color:#67e8f9;}
+.th-vert.d-ux   .th-vert-inner{color:#f9a8d4;}
+.th-vert.d-ana  .th-vert-inner{color:#fcd34d;}
+/* disc colour accent on header — light theme */
+body.light .th-vert.d-dev  .th-vert-inner{color:#4338ca;}
+body.light .th-vert.d-test .th-vert-inner{color:#0369a1;}
+body.light .th-vert.d-ux   .th-vert-inner{color:#be185d;}
+body.light .th-vert.d-ana  .th-vert-inner{color:#92400e;}
+
+/* DATA ROWS */
+.excel-tbl tbody tr:nth-child(even) td{background:var(--row-even);}
+.excel-tbl tbody tr:hover td{background:var(--row-hover);}
+.excel-tbl tbody td{vertical-align:middle;}
+
+/* info cell styles */
+.cell-num{text-align:center;color:var(--td);font-size:.62rem;padding:0 4px !important;}
+.cell-id{padding:5px 7px !important;}
+.cell-id a{color:var(--acc);font-weight:700;text-decoration:none;font-size:.7rem;}
+.cell-id a:hover{text-decoration:underline;}
+.cell-title{padding:5px 8px !important;color:var(--ts);max-width:180px;
+    overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-size:.72rem;}
+.cell-state{padding:4px 6px !important;text-align:center;}
+.cell-tag{padding:4px 6px !important;}
+.cell-res{padding:4px 6px !important;text-align:center;}
+
+/* TASK TYPE CELL */
+.tc{
+    width:60px;min-width:60px;max-width:80px;
+    padding:4px 3px !important;text-align:center;vertical-align:top;
+    cursor:pointer;transition:background .12s;
+    position:relative; /* anchor for the floating assigned-to dropdown */
+    overflow:visible !important;
+}
+.tc:hover{background:rgba(99,102,241,.1) !important;}
+.tc.on{background:var(--cell-on) !important;border-color:var(--cell-border) !important;}
+
+.tc-inner{display:flex;flex-direction:column;align-items:center;gap:3px;padding:2px 2px;}
+.tc-cb{accent-color:var(--acc);width:13px;height:13px;cursor:pointer;flex-shrink:0;}
+
+/* mini inputs inside cell */
+.tc-fields{display:none;width:100%;margin-top:4px;}
+.tc.on .tc-fields{display:flex;flex-direction:column;gap:3px;}
+.mini-inp{
+    width:100%;background:var(--inp2);border:1px solid var(--bs);
+    border-radius:4px;padding:2px 4px;color:var(--t);font-size:.58rem;
+    font-family:'Inter',sans-serif;outline:none;text-align:center;
+}
+.mini-inp:focus{border-color:var(--acc);}
+.mini-inp::placeholder{color:var(--td);font-size:.54rem;}
+
+/* ── ASSIGNED-TO: floats above table, not clipped by cell overflow ── */
+.mini-sel-wrap{
+    position:relative;
+    width:100%;
+}
+.mini-sel{
+    width:100%;
+    background:var(--inp2);border:1px solid var(--bs);
+    border-radius:4px;padding:3px 4px;color:var(--t);font-size:.58rem;
+    font-family:'Inter',sans-serif;outline:none;
+    /* do NOT set min-width here — the dropdown list itself expands via the native browser */
+}
+.mini-sel:focus{border-color:var(--acc);}
+.mini-sel option{background:var(--bg2);font-size:.72rem;}
+
+/* ── PILLS ── */
+.sp{display:inline-block;padding:1px 6px;border-radius:8px;font-size:.56rem;font-weight:600;white-space:nowrap;}
+.sp-active  {background:rgba(59,130,246,.2);color:#93c5fd;border:1px solid rgba(59,130,246,.4);}
+.sp-resolved{background:rgba(45,212,191,.2);color:#5eead4;border:1px solid rgba(45,212,191,.4);}
+.sp-closed  {background:rgba(52,211,153,.2);color:#6ee7b7;border:1px solid rgba(52,211,153,.4);}
+.sp-proposed{background:rgba(148,163,184,.2);color:#cbd5e1;border:1px solid rgba(148,163,184,.3);}
+.tp{display:inline-block;padding:1px 4px;border-radius:3px;font-size:.5rem;font-weight:600;margin:1px;}
+.tp-del{background:rgba(16,185,129,.2);color:#34d399;}
+.tp-adhoc{background:rgba(168,85,247,.2);color:#c4b5fd;}
+.tp-onhold{background:rgba(245,158,11,.2);color:#fcd34d;}
+.tp-nondel{background:rgba(239,68,68,.2);color:#f87171;}
+.rb{display:inline-flex;align-items:center;gap:3px;padding:1px 6px;border-radius:6px;font-size:.58rem;font-weight:600;}
+.rb-ok  {background:rgba(16,185,129,.15);color:#34d399;border:1px solid rgba(16,185,129,.3);}
+.rb-err {background:rgba(239,68,68,.15); color:#f87171;border:1px solid rgba(239,68,68,.3);}
+.rb-part{background:rgba(245,158,11,.15);color:#fbbf24;border:1px solid rgba(245,158,11,.3);}
+
+/* ── TOOLBAR (above table) ── */
+.tbl-toolbar{
+    display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin-bottom:10px;
+    padding:9px 12px;background:var(--card2);border:1px solid var(--b);border-radius:9px;
+}
+.toolbar-lbl{font-size:.68rem;color:var(--tm);font-weight:600;}
+.summary-stat{font-size:.68rem;color:var(--tm);}
+.summary-stat strong{color:var(--acc);}
+
+/* ── PROGRESS LOG ── */
+.gen-log{
+    margin-top:12px;background:var(--bg3);border:1px solid var(--b);
+    border-radius:8px;padding:8px 12px;font-size:.67rem;font-family:'Courier New',monospace;
+    max-height:180px;overflow-y:auto;line-height:1.65;display:none;
+}
+.gen-log.vis{display:block;}
+.gen-log::-webkit-scrollbar{width:4px;}
+.gen-log::-webkit-scrollbar-thumb{background:var(--bs);}
+.log-ok{color:#34d399;}.log-err{color:#f87171;}.log-info{color:#93c5fd;}.log-warn{color:#fbbf24;}
+
+/* ── LOADING ── */
+.loading-overlay{display:none;position:fixed;inset:0;background:rgba(15,23,42,.88);z-index:999;
+    align-items:center;justify-content:center;flex-direction:column;gap:14px;}
+.loading-overlay.vis{display:flex;}
+.spinner{width:36px;height:36px;border:3px solid rgba(255,255,255,.1);
+    border-top-color:#6366f1;border-radius:50%;animation:spin .75s linear infinite;}
+@keyframes spin{to{transform:rotate(360deg);}}
+.loading-text{color:#a5b4fc;font-size:.8rem;}
+
+/* ── TOAST ── */
+.toast{position:fixed;bottom:20px;right:20px;background:var(--bg2);
+    border:1px solid var(--bs);border-radius:10px;padding:10px 16px;font-size:.77rem;
+    color:var(--ts);box-shadow:0 8px 24px var(--sh);z-index:1000;opacity:0;transition:opacity .3s;max-width:360px;}
+.toast.show{opacity:1;}
+.empty-state{text-align:center;color:var(--tm);padding:32px;font-size:.8rem;}
+
+/* ── SEARCH ── */
+.si-wrap{position:relative;flex:1;min-width:160px;}
+.si-wrap input{width:100%;background:var(--inp);border:1px solid var(--bs);border-radius:7px;
+    padding:5px 9px 5px 25px;color:var(--t);font-size:.72rem;outline:none;font-family:'Inter',sans-serif;}
+.si-wrap input:focus{border-color:var(--acc);}
+.si-wrap::before{content:'🔍';position:absolute;left:7px;top:50%;transform:translateY(-50%);font-size:.65rem;}
+
+/* ── ASSIGNED-TO FLOATING SELECT ── */
+/* When a task cell is checked the assigned-to select floats wider than the narrow column */
+
+/* ── PREVIEW MODAL ── */
+.modal-bg{
+    display:none;position:fixed;inset:0;background:rgba(0,0,0,.72);
+    z-index:500;align-items:flex-start;justify-content:center;
+    padding:40px 20px;overflow-y:auto;
+}
+.modal-bg.open{display:flex;}
+.modal{
+    background:var(--bg2);border:1px solid var(--bs);border-radius:14px;
+    width:100%;max-width:95vw;padding:20px 24px;
+    box-shadow:0 16px 48px var(--sh);position:relative;
+}
+.modal-title{font-size:.92rem;font-weight:700;color:var(--acc);margin-bottom:14px;display:flex;align-items:center;gap:8px;}
+.modal-close{margin-left:auto;background:none;border:none;cursor:pointer;color:var(--tm);font-size:1.2rem;padding:0;}
+.modal-close:hover{color:var(--t);}
+.preview-tbl{width:100%;border-collapse:collapse;font-size:.72rem;margin-bottom:16px;}
+.preview-tbl th{background:var(--th-bg);color:var(--th-txt);padding:7px 10px;text-align:left;
+    font-size:.63rem;font-weight:600;text-transform:uppercase;letter-spacing:.04em;
+    border-bottom:2px solid var(--b);}
+body.light .preview-tbl th{background:#e2e8f0;color:#475569;}
+.preview-tbl td{padding:6px 10px;border-bottom:1px solid var(--b);color:var(--ts);vertical-align:middle;}
+.preview-tbl tr:hover td{background:var(--row-hover);}
+.modal-footer{display:flex;align-items:center;gap:10px;justify-content:flex-end;
+    padding-top:12px;border-top:1px solid var(--b);}
+.preview-stat{font-size:.72rem;color:var(--tm);margin-right:auto;}
+.preview-stat strong{color:var(--acc);}
+/* disc chips in preview — dark theme */
+.d-chip{display:inline-block;padding:1px 6px;border-radius:8px;font-size:.58rem;font-weight:600;}
+.d-chip.d-dev {background:rgba(99,102,241,.2);color:#a5b4fc;}
+.d-chip.d-test{background:rgba(6,182,212,.2); color:#67e8f9;}
+.d-chip.d-ux  {background:rgba(236,72,153,.2);color:#f9a8d4;}
+.d-chip.d-ana {background:rgba(245,158,11,.2);color:#fcd34d;}
+/* disc chips in preview — light theme */
+body.light .d-chip.d-dev {background:rgba(79,70,229,.12); color:#3730a3;}
+body.light .d-chip.d-test{background:rgba(3,105,161,.12);  color:#0369a1;}
+body.light .d-chip.d-ux  {background:rgba(190,24,93,.12);  color:#be185d;}
+body.light .d-chip.d-ana {background:rgba(146,64,14,.12);  color:#92400e;}
+/* editable task title in preview */
+.title-edit{
+    width:100%;background:var(--inp2);border:1px solid transparent;
+    border-radius:4px;padding:3px 6px;color:var(--t);font-size:.72rem;
+    font-family:'Inter',sans-serif;outline:none;
+}
+.title-edit:hover{border-color:var(--bs);}
+.title-edit:focus{border-color:var(--acc);background:var(--inp);}
+/* editable assigned-to / est in preview */
+.pv-sel{
+    width:100%;min-width:140px;background:var(--inp2);border:1px solid var(--bs);
+    border-radius:4px;padding:3px 5px;color:var(--t);font-size:.7rem;
+    font-family:'Inter',sans-serif;outline:none;
+}
+.pv-sel:focus{border-color:var(--acc);}
+.pv-sel option{background:var(--bg2);}
+.pv-num{
+    width:70px;background:var(--inp2);border:1px solid var(--bs);
+    border-radius:4px;padding:3px 5px;color:var(--t);font-size:.7rem;
+    font-family:'Inter',sans-serif;outline:none;text-align:center;
+}
+.pv-num:focus{border-color:var(--acc);}
+/* success banner */
+.success-banner{
+    display:none;margin-top:12px;padding:12px 16px;
+    background:rgba(16,185,129,.15);border:1px solid rgba(16,185,129,.4);
+    border-radius:9px;color:#34d399;font-size:.82rem;font-weight:600;
+    text-align:center;
+}
+.success-banner.vis{display:block;}
+/* th-vert height auto (horizontal headers) */
+</style>
+</head>
+<body>
+
+<div class="loading-overlay" id="loadingOverlay"><div class="spinner"></div><div class="loading-text" id="loadingText">Loading…</div></div>
+<div class="toast" id="toast"></div>
+
+<!-- TOP BAR -->
+<div class="topbar">
+    <div class="topbar-title">⚡ Sprint Task Creator</div>
+    <div class="topbar-right">
+        <button class="theme-btn" onclick="toggleTheme()" id="themeBtn">🌙 Dark</button>
+        <span id="connInfo" style="font-size:.66rem;color:var(--tm);display:none;"></span>
+        <button class="btn btn-ghost btn-sm" id="reConnBtn" onclick="showConnPanel()" style="display:none;">🔌 Reconnect</button>
+        <div id="connBadge" class="badge b-info">⬜ Not connected</div>
+    </div>
+</div>
+
+<div class="main">
+
+<!-- ══ STEP 1: CONNECTION ══ -->
+<div class="panel" id="connPanel">
+    <div class="panel-title">🔌 Step 1 — Connection</div>
+    <div style="display:grid;grid-template-columns:1.6fr 1.5fr 1fr 1fr;gap:12px;align-items:end;max-width:900px;">
+        <div class="field">
+            <label>TFS / Azure DevOps URL</label>
+            <input type="text" id="tfsUrl" placeholder="https://tfs.company.com/tfs/Collection"/>
+        </div>
+        <div class="field">
+            <label>Personal Access Token (PAT)</label>
+            <div class="pat-wrap">
+                <input type="password" id="pat" placeholder="Enter PAT then leave field" onblur="onPatBlur()"/>
+                <button class="pat-eye" onclick="togglePat()" id="patEye">👁️</button>
+            </div>
+        </div>
+        <div class="field">
+            <label>Project</label>
+            <select id="projectSel" disabled style="background:var(--inp);border:1px solid var(--bs);border-radius:7px;padding:7px 11px;color:var(--t);font-size:.77rem;font-family:'Inter',sans-serif;outline:none;">
+                <option value="">— enter PAT first —</option>
+            </select>
+        </div>
+        <div class="field">
+            <label style="visibility:hidden">.</label>
+            <button class="btn btn-primary" id="connectBtn" onclick="connectProject()" disabled>🔗 Connect</button>
+        </div>
+    </div>
+    <div id="patStatus" style="font-size:.68rem;color:var(--tm);margin-top:8px;">Enter PAT and leave the field — projects will auto-load</div>
+</div>
+
+<!-- ══ STEP 2: SPRINT SELECTION ══ -->
+<div class="panel" id="sprintPanel" style="display:none;">
+    <div class="panel-title">
+        📅 Step 2 — Sprint &amp; Area
+        <button class="recon-btn" onclick="showConnPanel()">🔌 Change Project</button>
+    </div>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;align-items:end;max-width:700px;">
+        <div class="field">
+            <label>Sprint / Iteration <span style="color:#34d399;font-weight:400;">(latest quarter pre-selected)</span></label>
+            <select id="iterSelect" onchange="selectIter(this.value)">
+                <option value="">-- Select sprint --</option>
+            </select>
+        </div>
+        <div class="field">
+            <label>Area Path <span style="color:#f87171;font-weight:500;">*required — select one area</span></label>
+            <select id="areaSel" onchange="onAreaChange(this.value)">
+                <option value="">— select an area —</option>
+            </select>
+        </div>
+    </div>
+    <div style="margin-top:12px;">
+        <button class="btn btn-primary" onclick="loadRequirements()">📋 Load Requirements</button>
+    </div>
+</div>
+
+<!-- ══ STEP 3: EXCEL VIEW ══ -->
+<div id="reqScreen">
+    <div class="panel" style="padding:12px 16px;">
+
+        <!-- Header row -->
+        <div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:8px;margin-bottom:10px;">
+            <div>
+                <span style="font-size:.82rem;font-weight:700;color:var(--acc);">📄 Requirements</span>
+                <span id="reqCountBadge" style="font-size:.7rem;color:var(--tm);margin-left:6px;font-weight:400;"></span>
+            </div>
+            <button class="btn btn-ghost btn-sm" onclick="backToSprint()">← Back to Sprint</button>
+        </div>
+
+        <!-- Toolbar -->
+        <div class="tbl-toolbar">
+            <div class="si-wrap" style="max-width:220px;">
+                <input type="text" id="reqSearch" placeholder="Search…" oninput="filterReqs()"/>
+            </div>
+
+            <div style="margin-left:auto;display:flex;align-items:center;gap:10px;flex-wrap:wrap;">
+                <span class="summary-stat">Reqs: <strong id="smReqs">0</strong></span>
+                <span class="summary-stat">Tasks to create: <strong id="smTasks">0</strong></span>
+                <!-- SINGLE GENERATE BUTTON -->
+                <button class="btn btn-success" id="genAllBtn" onclick="generateAllTasks()">
+                    ⚡ Generate All Tasks
+                </button>
+            </div>
+        </div>
+
+        <!-- Excel Table -->
+        <div class="excel-wrap">
+            <table class="excel-tbl" id="excelTbl">
+                <thead id="excelHead"></thead>
+                <tbody id="excelBody"></tbody>
+            </table>
+            <div class="empty-state" id="reqEmpty" style="display:none;">No requirements found.</div>
+        </div>
+
+        <!-- Generation Log -->
+        <div class="gen-log" id="genLog"></div>
+        <div class="success-banner" id="successBanner"></div>
+
+    </div>
+</div>
+
+</div><!-- /main -->
+
+<!-- ══ PREVIEW MODAL ══ -->
+<div class="modal-bg" id="previewModal">
+    <div class="modal">
+        <div class="modal-title">
+            👁️ Preview — Tasks to be Created
+            <button class="modal-close" onclick="closePreview()">✕</button>
+        </div>
+        <div id="previewBody"></div>
+        <div class="modal-footer">
+            <span class="preview-stat" id="previewStat"></span>
+            <button class="btn btn-ghost btn-sm" onclick="closePreview()">Cancel</button>
+            <button class="btn btn-success" id="confirmGenBtn" onclick="confirmGenerate()">⚡ Confirm &amp; Create Tasks</button>
+        </div>
+    </div>
+</div>
+
+<script>
+/* ═══════════════════════════
+   TASK TYPES
+═══════════════════════════ */
+const TASK_TYPES=[
+    {name:'UI/UX Design',           disc:'User Experience'},
+    {name:'Plan Preparation',        disc:'Development'},
+    {name:'Plan Review',             disc:'Development'},
+    {name:'Development',             disc:'Development'},
+    {name:'Technical Feasibility',   disc:'Development'},
+    {name:'Support',                 disc:'Development'},
+    {name:'Verification',            disc:'Development'},
+    {name:'Unit Test',               disc:'Development'},
+    {name:'Wiki Creation',           disc:'Development'},
+    {name:'Wiki Review',             disc:'Development'},
+    {name:'Code Review',             disc:'Development'},
+    {name:'Unit test',               disc:'Development'},
+    {name:'L1',                      disc:'Development'},
+    {name:'L2',                      disc:'Test'},
+    {name:'L3',                      disc:'Test'},
+    {name:'TC Generation',           disc:'Test'},
+    {name:'TC Review',               disc:'Test'},
+    {name:'Requirement Gathering',   disc:'Analysis'},
+    {name:'Requirement Elicitation', disc:'Analysis'},
+    {name:'Mock-Up Design',          disc:'Analysis'},
+    {name:'Writing US & AC',         disc:'Analysis'},
+];
+const DISC_CLS={'Development':'d-dev','Test':'d-test','User Experience':'d-ux','Analysis':'d-ana'};
+
+/* ═══════════════════════════
+   STATE
+═══════════════════════════ */
+let tfsUrl='', hdrs=null, currentProject='', selectedIter='';
+let allIterations=[], allAreas=[], memberList=[];
+let requirements=[], filteredReqs=[];
+// reqData[reqId] = { sel: Set<ttIdx>, at:{ttIdx:str}, oe:{}, rw:{}, cw:{} }
+let reqData={};
+
+/* ═══════════════════════════
+   THEME
+═══════════════════════════ */
+let isDark=true;
+function toggleTheme(){
+    isDark=!isDark;
+    document.body.classList.toggle('light',!isDark);
+    document.getElementById('themeBtn').textContent=isDark?'🌙 Dark':'☀️ Light';
+    localStorage.setItem('tc_theme',isDark?'dark':'light');
+}
+
+/* ═══════════════════════════
+   INIT
+═══════════════════════════ */
+window.addEventListener('DOMContentLoaded',()=>{
+    // restore theme
+    const t=localStorage.getItem('tc_theme');
+    if(t==='light'){isDark=false;document.body.classList.add('light');document.getElementById('themeBtn').textContent='☀️ Light';}
+
+    const su=localStorage.getItem('sprintTracker_tfsUrl');
+    const sp=localStorage.getItem('sprintTracker_pat');
+    if(su) document.getElementById('tfsUrl').value=su;
+    if(sp) document.getElementById('pat').value=sp;
+    if(su&&sp) onPatBlur();
+});
+
+/* ═══════════════════════════
+   AUTH
+═══════════════════════════ */
+function togglePat(){
+    const i=document.getElementById('pat');
+    i.type=i.type==='password'?'text':'password';
+    document.getElementById('patEye').textContent=i.type==='password'?'👁️':'🔒';
+}
+async function onPatBlur(){
+    const url=document.getElementById('tfsUrl').value.trim().replace(/\/$/,'');
+    const pat=document.getElementById('pat').value.trim();
+    if(!url||!pat) return;
+    tfsUrl=url; hdrs={'Authorization':'Basic '+btoa(':'+pat),'Content-Type':'application/json'};
+    setPS('⏳ Validating…','var(--tm)');
+    showLoading('Validating PAT…');
+    try{
+        const cr=await fetch(tfsUrl+'/_apis/connectionData',{headers:hdrs});
+        if(!cr.ok) throw new Error('Auth failed ('+cr.status+')');
+        const pr=await fetch(tfsUrl+'/_apis/projects?api-version=5.0',{headers:hdrs});
+        if(!pr.ok) throw new Error('Could not load projects');
+        const projects=(await pr.json()).value||[];
+        localStorage.setItem('sprintTracker_tfsUrl',tfsUrl);
+        localStorage.setItem('sprintTracker_pat',pat);
+        renderProjectDropdown(projects);
+        setBadge('✅ Authenticated','b-ok');
+        setPS('✅ '+projects.length+' projects loaded — select one and click Connect','#34d399');
+    }catch(e){setBadge('❌ Auth failed','b-err');setPS('❌ '+e.message,'#f87171');showToast('❌ '+e.message,'err');}
+    finally{hideLoading();}
+}
+function setPS(m,c){const e=document.getElementById('patStatus');e.textContent=m;e.style.color=c;}
+function renderProjectDropdown(projects){
+    const sel=document.getElementById('projectSel');
+    sel.innerHTML='<option value="">— select a project —</option>'+
+        projects.map(p=>`<option value="${escAttr(p.name)}">${escHtml(p.name)}</option>`).join('');
+    sel.disabled=false;
+    document.getElementById('connectBtn').disabled=false;
+}
+
+/* ═══════════════════════════
+   CONNECT PROJECT
+═══════════════════════════ */
+async function connectProject(){
+    const sel=document.getElementById('projectSel');
+    currentProject=sel?sel.value:'';
+    if(!currentProject){showToast('❌ Select a project first','err');return;}
+    showLoading('Connecting to '+currentProject+'…');
+    try{
+        const[ir,ar]=await Promise.all([
+            fetch(tfsUrl+'/'+currentProject+'/_apis/wit/classificationnodes/iterations?$depth=10&api-version=5.0',{headers:hdrs}),
+            fetch(tfsUrl+'/'+currentProject+'/_apis/wit/classificationnodes/areas?$depth=10&api-version=5.0',{headers:hdrs})
+        ]);
+        if(!ir.ok) throw new Error('Failed to load iterations');
+        allIterations=flattenNodes(await ir.json());
+        allAreas=flattenNodes(await ar.json());
+
+        // Members are loaded when user selects an area path (onAreaChange)
+        memberList=[];
+
+        // Area dropdown — single required selection, no "All Areas" option
+        const as=document.getElementById('areaSel');
+        as.innerHTML='<option value="">— select an area —</option>'+
+            allAreas.map(a=>`<option value="${escAttr(a.path)}">${escHtml(a.name)}</option>`).join('');
+
+        // Iteration dropdown (grouped, latest quarter first)
+        buildIterSelect();
+
+        document.getElementById('connPanel').style.display='none';
+        document.getElementById('sprintPanel').style.display='block';
+        document.getElementById('reConnBtn').style.display='inline-flex';
+        document.getElementById('connInfo').textContent='Project: '+currentProject;
+        document.getElementById('connInfo').style.display='inline';
+        setBadge('✅ '+currentProject,'b-ok');
+        document.getElementById('sprintPanel').scrollIntoView({behavior:'smooth',block:'start'});
+        showToast('✅ Connected to "'+currentProject+'"');
+    }catch(e){showToast('❌ '+e.message,'err');}
+    finally{hideLoading();}
+}
+
+function showConnPanel(){
+    document.getElementById('connPanel').style.display='block';
+    document.getElementById('sprintPanel').style.display='none';
+    document.getElementById('reqScreen').style.display='none';
+    document.getElementById('reConnBtn').style.display='none';
+    document.getElementById('connInfo').style.display='none';
+}
+function backToSprint(){
+    document.getElementById('sprintPanel').style.display='block';
+    document.getElementById('reqScreen').style.display='none';
+    document.getElementById('sprintPanel').scrollIntoView({behavior:'smooth',block:'start'});
+}
+
+function buildIterSelect(){
+    const sel=document.getElementById('iterSelect');
+    if(!allIterations.length){sel.innerHTML='<option value="">No iterations found</option>';return;}
+    const groups={};
+    const rePi=/pi[-_\s]?\d{4}[-_\s]?\d+/i;
+    const reQ=/q[1-4][-_\s]?\d{4}|\d{4}[-_\s]?q[1-4]/i;
+    allIterations.forEach(it=>{
+        const m=it.name.match(rePi)||it.name.match(reQ)||(it.path.split('\\').length>2?[it.path.split('\\').slice(1,-1).join(' ')]:null);
+        const gk=m?m[0].toUpperCase().replace(/[-_\s]+/g,' '):'Other';
+        if(!groups[gk])groups[gk]=[];
+        groups[gk].push(it);
+    });
+    const gKeys=Object.keys(groups).sort((a,b)=>{
+        const na=a.replace(/\D/g,''),nb=b.replace(/\D/g,'');
+        return (parseInt(nb)||0)-(parseInt(na)||0);
+    });
+    sel.innerHTML='<option value="">-- Select sprint --</option>';
+    let firstSet=false;
+    gKeys.forEach((gk,gi)=>{
+        const grp=document.createElement('optgroup');
+        grp.label=(gi===0?'★ Latest: ':'')+gk;
+        groups[gk].forEach((it,ii)=>{
+            const opt=document.createElement('option');
+            opt.value=it.path;
+            opt.textContent=it.name;
+            if(!firstSet){opt.selected=true;selectedIter=it.path;firstSet=true;}
+            grp.appendChild(opt);
+        });
+        sel.appendChild(grp);
+    });
+}
+function selectIter(path){selectedIter=path;}
+
+/* ═══════════════════════════
+   LOAD REQUIREMENTS
+═══════════════════════════ */
+async function loadRequirements(){
+    if(!selectedIter){showToast('❌ Select a sprint first','err');return;}
+    const area=document.getElementById('areaSel').value;
+    showLoading('Loading requirements…');
+    try{
+        const wiqlEsc=s=>s.replace(/^\\/,'').replace(/\\Iteration\\/i,'\\').replace(/\\Area\\/i,'\\').replace(/'/g,"''");
+        const iterSafe=wiqlEsc(selectedIter);
+        const areaSafe=area?wiqlEsc(area):'';
+        let wiql="SELECT [System.Id] FROM WorkItems WHERE [System.WorkItemType] = 'Requirement' AND [System.IterationPath] UNDER '"+iterSafe+"'";
+        if(areaSafe) wiql+=" AND [System.AreaPath] UNDER '"+areaSafe+"'";
+        wiql+=' ORDER BY [System.Id]';
+        console.log('[TaskCreator] WIQL:',wiql);
+
+        const wr=await fetch(tfsUrl+'/'+currentProject+'/_apis/wit/wiql?api-version=5.0',{
+            method:'POST',headers:{...hdrs,'Content-Type':'application/json'},body:JSON.stringify({query:wiql})
+        });
+        if(!wr.ok){
+            const rt=await wr.text();let msg=rt;
+            try{const eb=JSON.parse(rt);msg=eb.message||rt;}catch(e2){}
+            showErrorPanel('WIQL '+wr.status,msg+'\n\nQuery:\n'+wiql);
+            throw new Error('WIQL '+wr.status+': '+msg.substring(0,150));
+        }
+        const ids=((await wr.json()).workItems||[]).map(w=>w.id);
+        if(!ids.length){
+            requirements=[];filteredReqs=[];
+            document.getElementById('sprintPanel').style.display='none';
+            document.getElementById('reqScreen').style.display='block';
+            renderExcel();showToast('ℹ️ No requirements found','warn');return;
+        }
+        const fields='System.Id,System.Title,System.State,System.IterationPath,System.AreaPath,System.Tags,System.AssignedTo';
+        let all=[];
+        for(let i=0;i<ids.length;i+=200){
+            const batch=ids.slice(i,i+200).join(',');
+            const r=await fetch(tfsUrl+'/_apis/wit/workitems?ids='+batch+'&fields='+fields+'&api-version=5.0',{headers:hdrs});
+            if(!r.ok) throw new Error('Detail fetch failed');
+            all.push(...((await r.json()).value||[]));
+        }
+        requirements=all.map(w=>({
+            id:w.id,title:w.fields['System.Title']||'',state:w.fields['System.State']||'',
+            iter:w.fields['System.IterationPath']||'',area:w.fields['System.AreaPath']||'',
+            tags:w.fields['System.Tags']||'',url:tfsUrl+'/_workitems/edit/'+w.id
+        }));
+        reqData={};
+        requirements.forEach(r=>{reqData[r.id]={sel:new Set(),at:{},oe:{},rw:{},cw:{}};});
+        filteredReqs=[...requirements];
+        document.getElementById('sprintPanel').style.display='none';
+        document.getElementById('reqScreen').style.display='block';
+        document.getElementById('reqCountBadge').textContent='— '+requirements.length+' requirement'+(requirements.length!==1?'s':'')+' loaded';
+        renderExcel();
+        document.getElementById('reqScreen').scrollIntoView({behavior:'smooth',block:'start'});
+        showToast('✅ Loaded '+requirements.length+' requirements');
+
+        // Load members from sprint capacity for the selected area
+        loadMembersFromCapacity(selectedIter, area);
+    }catch(e){showToast('❌ '+e.message,'err');}
+    finally{hideLoading();}
+}
+
+/* ═══════════════════════════
+   RENDER EXCEL TABLE
+═══════════════════════════ */
+function renderExcel(){
+    const thead=document.getElementById('excelHead');
+    const tbody=document.getElementById('excelBody');
+    const empty=document.getElementById('reqEmpty');
+
+    // Header — no State / Tags / Result columns
+    thead.innerHTML='<tr>'+
+        '<th class="c-num col-sticky" style="left:0;">#</th>'+
+        '<th class="c-id col-sticky" style="left:36px;">ID</th>'+
+        '<th class="c-title col-sticky" style="left:94px;width:180px;min-width:140px;">Title</th>'+
+        TASK_TYPES.map(tt=>`<th class="th-vert ${DISC_CLS[tt.disc]||'d-dev'}">`+
+            `<span class="th-vert-inner">${escHtml(tt.name)}</span></th>`).join('')+
+        '</tr>';
+
+    if(!filteredReqs.length){
+        tbody.innerHTML='';empty.style.display='block';
+        updateSummary();return;
+    }
+    empty.style.display='none';
+
+    // Build member options (area-filtered list)
+    const memberOpts='<option value="">— Unassigned —</option>'+
+        memberList.map(m=>`<option value="${escAttr(m)}">${escHtml(m)}</option>`).join('');
+
+    tbody.innerHTML=filteredReqs.map((r,idx)=>{
+        // Each task type cell: checkbox + (when on) assigned-to dropdown + orig est input only
+        // Remaining Work will be set = Orig Est programmatically on creation
+        const tcs=TASK_TYPES.map((tt,i)=>`<td class="tc" id="tc_${r.id}_${i}" onclick="toggleCell(${r.id},${i},event)">
+            <div class="tc-inner">
+                <input type="checkbox" class="tc-cb" id="cb_${r.id}_${i}"
+                    onclick="event.stopPropagation()" onchange="onCellChange(${r.id},${i})">
+                <div class="tc-fields" id="tcf_${r.id}_${i}">
+                    <div class="mini-sel-wrap">
+                        <select class="mini-sel" id="at_${r.id}_${i}" onclick="event.stopPropagation()" title="Assigned To">${memberOpts}</select>
+                    </div>
+                    <input class="mini-inp" type="number" id="oe_${r.id}_${i}" placeholder="Est h" min="0" step="0.5"
+                        title="Original Estimate (hours)"
+                        onclick="event.stopPropagation()" onchange="updateSummary()">
+                </div>
+            </div>
+        </td>`).join('');
+        return `<tr id="row_${r.id}">
+            <td class="cell-num c-num col-sticky" style="left:0;">${idx+1}</td>
+            <td class="cell-id c-id col-sticky" style="left:36px;"><a href="${r.url}" target="_blank">#${r.id}</a></td>
+            <td class="cell-title c-title col-sticky" style="left:94px;" title="${escHtml(r.title)}">${escHtml(r.title)}</td>
+            ${tcs}
+        </tr>`;
+    }).join('');
+
+    // Restore checked state
+    filteredReqs.forEach(r=>syncRow(r.id));
+    updateSummary();
+}
+
+/* ═══════════════════════════
+   CELL INTERACTIONS
+═══════════════════════════ */
+function toggleCell(reqId,i,event){
+    const cb=document.getElementById('cb_'+reqId+'_'+i);
+    cb.checked=!cb.checked;
+    onCellChange(reqId,i);
+}
+function onCellChange(reqId,i){
+    const cb=document.getElementById('cb_'+reqId+'_'+i);
+    const cell=document.getElementById('tc_'+reqId+'_'+i);
+    if(!reqData[reqId]) reqData[reqId]={sel:new Set(),at:{},oe:{},rw:{},cw:{}};
+    cb.checked?reqData[reqId].sel.add(i):reqData[reqId].sel.delete(i);
+    cell.classList.toggle('on',cb.checked);
+    updateSummary();
+}
+function syncRow(reqId){
+    const sel=(reqData[reqId]||{sel:new Set()}).sel;
+    TASK_TYPES.forEach((_,i)=>{
+        const cb=document.getElementById('cb_'+reqId+'_'+i);
+        const cell=document.getElementById('tc_'+reqId+'_'+i);
+        if(!cb||!cell) return;
+        cb.checked=sel.has(i);
+        cell.classList.toggle('on',sel.has(i));
+    });
+}
+function globalAll(state){
+    filteredReqs.forEach(r=>{
+        if(!reqData[r.id]) reqData[r.id]={sel:new Set(),at:{},oe:{},rw:{},cw:{}};
+        TASK_TYPES.forEach((_,i)=>{state?reqData[r.id].sel.add(i):reqData[r.id].sel.delete(i);});
+        syncRow(r.id);
+    });
+    updateSummary();
+}
+function globalTT(disc){
+    filteredReqs.forEach(r=>{
+        if(!reqData[r.id]) reqData[r.id]={sel:new Set(),at:{},oe:{},rw:{},cw:{}};
+        TASK_TYPES.forEach((tt,i)=>{if(tt.disc===disc) reqData[r.id].sel.add(i);});
+        syncRow(r.id);
+    });
+    updateSummary();
+}
+function updateSummary(){
+    const reqs=filteredReqs.filter(r=>(reqData[r.id]||{sel:new Set()}).sel.size>0);
+    const tasks=filteredReqs.reduce((s,r)=>s+((reqData[r.id]||{sel:new Set()}).sel.size),0);
+    document.getElementById('smReqs').textContent=reqs.length;
+    document.getElementById('smTasks').textContent=tasks;
+}
+
+/* ═══════════════════════════
+   AREA MEMBERS
+═══════════════════════════ */
+/* ═══════════════════════════════════════════
+   LOAD MEMBERS FROM SPRINT CAPACITY PAGE
+   Mirrors the exact approach in index.html:
+   1. Get all teams for project
+   2. Match area last-segment → team name
+   3. Fetch team iterations → find iteration ID by name/path
+   4. GET /{project}/{team}/_apis/work/teamsettings/iterations/{id}/capacities
+   5. Extract teamMember.displayName
+═══════════════════════════════════════════ */
+async function loadMembersFromCapacity(iterPath, areaPath){
+    if(!iterPath||!currentProject) return;
+    try{
+        // Step 1: fetch all teams
+        const tr=await fetch(tfsUrl+'/_apis/projects/'+currentProject+'/teams?api-version=5.0',{headers:hdrs});
+        if(!tr.ok) return;
+        const teams=((await tr.json()).value)||[];
+
+        // Step 2: match area last segment → team name (same logic as index.html)
+        const areaLeaf=(areaPath||'').split('\\').pop().toLowerCase();
+        let targetTeam=
+            teams.find(t=>t.name.toLowerCase()===areaLeaf) ||
+            teams.find(t=>t.name.toLowerCase()===areaLeaf+' team') ||
+            teams.find(t=>t.name.toLowerCase()===areaLeaf+'-team');
+
+        // fallback: project default team
+        if(!targetTeam){
+            targetTeam=teams.find(t=>t.name===currentProject||t.name===currentProject+' Team')||teams[0];
+        }
+        if(!targetTeam){ console.warn('[TC] No team found'); return; }
+
+        // Step 3: fetch team iterations and find the selected one
+        const irResp=await fetch(
+            tfsUrl+'/'+currentProject+'/'+encodeURIComponent(targetTeam.name)+
+            '/_apis/work/teamsettings/iterations?api-version=5.0',{headers:hdrs});
+        if(!irResp.ok){ console.warn('[TC] Team iterations fetch failed'); return; }
+        const iterData=((await irResp.json()).value)||[];
+
+        // Match by path equality OR by last name segment (same as index.html)
+        const iterName=iterPath.split('\\').pop();
+        const matchedIter=iterData.find(i=>i.path===iterPath||i.name===iterName);
+        if(!matchedIter||!matchedIter.id){
+            console.warn('[TC] Iteration not found in team:',iterName,'available:',iterData.map(i=>i.name));
+            return;
+        }
+
+        // Step 4: fetch capacities
+        const capResp=await fetch(
+            tfsUrl+'/'+currentProject+'/'+encodeURIComponent(targetTeam.name)+
+            '/_apis/work/teamsettings/iterations/'+matchedIter.id+'/capacities?api-version=5.0',{headers:hdrs});
+        if(!capResp.ok){ console.warn('[TC] Capacity fetch failed',capResp.status); return; }
+        const capData=((await capResp.json()).value)||[];
+
+        // Step 5: extract proper display names from capacity data
+        // TFS can return displayName as "domain\username" or "Full Name <email>" or just "Full Name"
+        // We want only the clean human-readable name
+        const members=capData
+            .map(item=>{
+                let name=item.teamMember?.displayName||'';
+                // Remove email part:  "John Smith <john@corp.com>" → "John Smith"
+                name=name.replace(/<[^>]+>/g,'').trim();
+                // Remove domain prefix: "DOMAIN\john.smith" → use uniqueName-based fallback instead
+                if(name.includes('\\')) {
+                    // displayName is a domain login — try to get a better name from uniqueName
+                    // uniqueName is typically "john.smith@domain.com" — not ideal for display
+                    // So just take the part after the backslash and title-case it
+                    const login=name.split('\\').pop();
+                    // Convert "john.smith" or "johnsmith" to "John Smith" if it looks like a username
+                    if(login&&!login.includes(' ')){
+                        name=login.replace(/[._-]+/g,' ').replace(/\b\w/g,c=>c.toUpperCase());
+                    } else {
+                        name=login;
+                    }
+                }
+                return name;
+            })
+            .filter(Boolean)
+            .sort();
+
+        if(members.length){
+            memberList=members;
+            console.log('[TC] Members from capacity:',memberList);
+            showToast('\u2705 '+memberList.length+' member'+(memberList.length!==1?'s':'')+' loaded from sprint capacity','ok');
+            if(document.getElementById('reqScreen').style.display==='block'&&filteredReqs.length) renderExcel();
+        } else {
+            console.warn('[TC] No members in capacity response — check team/iteration match');
+        }
+    }catch(e){ console.warn('[TC] loadMembersFromCapacity error:',e.message); }
+}
+
+function onAreaChange(areaPath){
+    // Members refreshed when Load Requirements is clicked
+    memberList=[];
+}
+
+/* ═══════════════════════════
+   GENERATE — PREVIEW FIRST
+═══════════════════════════ */
+let _pendingTasks=[];
+
+function generateAllTasks(){
+    const toProcess=filteredReqs.filter(r=>(reqData[r.id]||{sel:new Set()}).sel.size>0);
+    if(!toProcess.length){showToast('❌ No tasks selected','err');return;}
+
+    // Collect preview data
+    _pendingTasks=[];
+    for(const req of toProcess){
+        const selIdx=[...(reqData[req.id]||{sel:new Set()}).sel];
+        for(const i of selIdx){
+            const tt=TASK_TYPES[i];
+            const assignedTo=(document.getElementById('at_'+req.id+'_'+i)||{}).value||'';
+            const origEst=parseFloat((document.getElementById('oe_'+req.id+'_'+i)||{}).value)||0;
+            _pendingTasks.push({
+                reqId:req.id, reqTitle:req.title, reqIter:req.iter, reqArea:req.area,
+                ttIdx:i, ttName:tt.name, disc:tt.disc,
+                assignedTo, origEst,
+                remWork:origEst,   // Remaining = Original Estimate
+            });
+        }
+    }
+
+    // Build preview table — Assigned To, Orig Est and Title are all editable
+    const memberOpts='<option value="">— Unassigned —</option>'+
+        memberList.map(m=>`<option value="${escAttr(m)}">${escHtml(m)}</option>`).join('');
+
+    const tbody=_pendingTasks.map((t,n)=>{
+        const iterShort=t.reqIter.split('\\').pop();
+        const defaultTitle=t.ttName+' - '+t.reqTitle;
+        // Build member options with current assignedTo pre-selected
+        const atOpts='<option value="">— Unassigned —</option>'+
+            memberList.map(m=>`<option value="${escAttr(m)}"${m===t.assignedTo?' selected':''}>${escHtml(m)}</option>`).join('');
+        return '<tr>'+
+        '<td style="text-align:center;color:var(--td);width:32px;">'+(n+1)+'</td>'+
+        '<td style="width:56px;"><a href="'+tfsUrl+'/_workitems/edit/'+t.reqId+'" target="_blank" style="color:var(--acc);font-weight:600;text-decoration:none;">#'+t.reqId+'</a></td>'+
+        '<td style="max-width:160px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;" title="'+escHtml(t.reqTitle)+'">'+escHtml(t.reqTitle)+'</td>'+
+        '<td><strong>'+escHtml(t.ttName)+'</strong></td>'+
+        '<td><span class="d-chip '+(DISC_CLS[t.disc]||'d-dev')+'">'+escHtml(t.disc)+'</span></td>'+
+        '<td><select class="pv-sel" id="pa_'+n+'">'+atOpts+'</select></td>'+
+        '<td><input class="pv-num" type="number" id="pe_'+n+'" value="'+(t.origEst||'')+'" placeholder="h" min="0" step="0.5"></td>'+
+        '<td style="width:110px;" title="'+escHtml(t.reqIter)+'">'+escHtml(iterShort)+'</td>'+
+        '<td style="min-width:240px;"><input class="title-edit" type="text" id="pt_'+n+'" value="'+escAttr(defaultTitle)+'" title="Click to edit task title"></td>'+
+        '</tr>';
+    }).join('');
+
+    document.getElementById('previewBody').innerHTML=
+        '<div style="overflow-x:auto;">'+
+        '<table class="preview-tbl">'+
+        '<thead><tr>'+
+        '<th style="width:32px;">#</th>'+
+        '<th style="width:56px;">Req ID</th>'+
+        '<th>Requirement</th>'+
+        '<th>Task Type</th>'+
+        '<th>Discipline</th>'+
+        '<th>Assigned To <span style="font-weight:400;color:var(--tm);">(edit)</span></th>'+
+        '<th style="width:70px;">Orig Est <span style="font-weight:400;color:var(--tm);">(edit)</span></th>'+
+        '<th style="width:110px;">Iteration</th>'+
+        '<th>Task Title <span style="font-weight:400;color:var(--tm);">(edit)</span></th>'+
+        '</tr></thead>'+
+        '<tbody>'+tbody+'</tbody>'+
+        '</table></div>';
+
+    document.getElementById('previewStat').innerHTML=
+        '<strong>'+_pendingTasks.length+'</strong> task(s) across <strong>'+toProcess.length+'</strong> requirement(s) will be created';
+
+    document.getElementById('previewModal').classList.add('open');
+}
+
+function closePreview(){
+    document.getElementById('previewModal').classList.remove('open');
+}
+
+async function confirmGenerate(){
+    if(!_pendingTasks.length) return;
+
+    // Read all editable fields from preview inputs before closing
+    _pendingTasks.forEach((t,n)=>{
+        const titleInp=document.getElementById('pt_'+n);
+        const atInp=document.getElementById('pa_'+n);
+        const estInp=document.getElementById('pe_'+n);
+        t.customTitle=(titleInp?.value.trim())||t.ttName+' - '+t.reqTitle;
+        if(atInp&&atInp.value) t.assignedTo=atInp.value;
+        const est=parseFloat(estInp?.value);
+        if(!isNaN(est)&&est>=0){ t.origEst=est; t.remWork=est; }
+    });
+
+    closePreview();
+
+    const btn=document.getElementById('genAllBtn');
+    btn.disabled=true; btn.textContent='⏳ Creating…';
+
+    const logEl=document.getElementById('genLog');
+    logEl.innerHTML=''; logEl.classList.add('vis');
+    addLog(logEl,'Starting: '+_pendingTasks.length+' tasks…','info');
+
+    const banner=document.getElementById('successBanner');
+    banner.classList.remove('vis');
+
+    let totalOk=0, totalFail=0;
+
+    for(const t of _pendingTasks){
+        try{
+            const body=[
+                {op:'add',path:'/fields/System.Title',                    value:t.customTitle},
+                {op:'add',path:'/fields/System.IterationPath',             value:t.reqIter},
+                {op:'add',path:'/fields/System.AreaPath',                  value:t.reqArea},
+                {op:'add',path:'/fields/Microsoft.VSTS.Common.Discipline', value:t.disc},
+            ];
+            if(t.assignedTo) body.push({op:'add',path:'/fields/System.AssignedTo',value:t.assignedTo});
+            if(t.origEst)    body.push({op:'add',path:'/fields/Microsoft.VSTS.Scheduling.OriginalEstimate',value:t.origEst});
+            if(t.remWork)    body.push({op:'add',path:'/fields/Microsoft.VSTS.Scheduling.RemainingWork',   value:t.remWork});
+            body.push({op:'add',path:'/relations/-',value:{rel:'System.LinkTypes.Hierarchy-Reverse',url:tfsUrl+'/_apis/wit/workitems/'+t.reqId}});
+
+            const res=await fetch(tfsUrl+'/'+currentProject+'/_apis/wit/workitems/$Task?api-version=5.0',
+                {method:'POST',headers:{...hdrs,'Content-Type':'application/json-patch+json'},body:JSON.stringify(body)});
+            if(!res.ok){const tx=await res.text();throw new Error('HTTP '+res.status+': '+tx.substring(0,100));}
+            const rd2=await res.json();
+            totalOk++;
+            addLog(logEl,'✅ <a href="'+tfsUrl+'/_workitems/edit/'+rd2.id+'" target="_blank" style="color:#34d399;">#'+rd2.id+'</a> — <em>'+escHtml(t.customTitle)+'</em>','ok');
+        }catch(e){
+            totalFail++;
+            addLog(logEl,'❌ <em>'+escHtml(t.customTitle)+'</em> → Req #'+t.reqId+': '+escHtml(e.message),'err');
+        }
+    }
+
+    addLog(logEl,'── Done: '+totalOk+' created, '+totalFail+' failed ──',totalFail>0?'warn':'info');
+
+    // Success / partial banner
+    if(totalFail===0){
+        banner.innerHTML='🎉 Successfully created <strong>'+totalOk+'</strong> task'+( totalOk!==1?'s':'')+' — all tasks have been added to TFS!';
+        banner.style.color='#34d399';banner.style.borderColor='rgba(16,185,129,.4)';banner.style.background='rgba(16,185,129,.12)';
+    } else {
+        banner.innerHTML='⚠️ <strong>'+totalOk+'</strong> task'+(totalOk!==1?'s':'')+' created, <strong>'+totalFail+'</strong> failed — check the log above for details.';
+        banner.style.color='#fbbf24';banner.style.borderColor='rgba(245,158,11,.4)';banner.style.background='rgba(245,158,11,.1)';
+    }
+    banner.classList.add('vis');
+    banner.scrollIntoView({behavior:'smooth',block:'nearest'});
+
+    showToast(totalFail===0?'🎉 '+totalOk+' tasks created successfully!':'⚠️ '+totalOk+' ok / '+totalFail+' failed',totalFail>0?'warn':'ok');
+    btn.disabled=false; btn.textContent='⚡ Generate All Tasks';
+
+    // Refresh the excel table — clears all checkboxes and resets selection state
+    reqData={};
+    requirements.forEach(r=>{reqData[r.id]={sel:new Set(),at:{},oe:{},rw:{},cw:{}};});
+    filteredReqs=[...requirements];
+    renderExcel();
+}
+
+function addLog(el,msg,type){
+    const cls={ok:'log-ok',err:'log-err',info:'log-info',warn:'log-warn'}[type]||'log-info';
+    const d=document.createElement('div');d.className=cls;d.innerHTML=msg;
+    el.appendChild(d);el.scrollTop=el.scrollHeight;
+}
+
+/* ═══════════════════════════
+   FILTER
+═══════════════════════════ */
+function filterReqs(){
+    const q=document.getElementById('reqSearch').value.trim().toLowerCase();
+    filteredReqs=requirements.filter(r=>!q||r.title.toLowerCase().includes(q)||String(r.id).includes(q));
+    renderExcel();
+}
+
+/* ═══════════════════════════
+   UTILS
+═══════════════════════════ */
+function flattenNodes(node,res=[],d=0){
+    if(!node) return res;
+    if(d>0){const raw=node.path||node.name;res.push({name:node.name,path:raw.replace(/^\\/,''),id:node.id||null});}
+    if(node.children) node.children.forEach(c=>flattenNodes(c,res,d+1));
+    return res;
+}
+function stateHtml(s){
+    const m={Active:'sp-active',Resolved:'sp-resolved',Closed:'sp-closed',Proposed:'sp-proposed'};
+    return '<span class="sp '+(m[s]||'sp-proposed')+'">'+escHtml(s)+'</span>';
+}
+function tagHtml(tags){
+    if(!tags) return '';
+    return tags.split(';').map(t=>t.trim()).filter(Boolean).map(t=>{
+        const l=t.toLowerCase();
+        let c='';
+        if(l.includes('deliverables adhoc'))       c='tp-adhoc';
+        else if(l.includes('deliverables onhold')) c='tp-onhold';
+        else if(l.includes('non-deliverable'))     c='tp-nondel';
+        else if(l.includes('deliverable'))         c='tp-del';
+        return c?'<span class="tp '+c+'">'+escHtml(t)+'</span>':'';
+    }).join('');
+}
+function escHtml(s){if(s==null)return'';return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');}
+function escAttr(s){return escHtml(s);}
+function escId(s){return String(s).replace(/[^a-zA-Z0-9_-]/g,'_');}
+
+function showLoading(m){document.getElementById('loadingText').textContent=m||'Loading…';document.getElementById('loadingOverlay').classList.add('vis');}
+function hideLoading(){document.getElementById('loadingOverlay').classList.remove('vis');}
+function setBadge(t,c){const b=document.getElementById('connBadge');b.textContent=t;b.className='badge '+c;}
+let _tt;
+function showToast(msg,type='ok'){
+    const el=document.getElementById('toast');el.innerHTML=msg;
+    const cols={ok:'rgba(16,185,129,.4)',err:'rgba(239,68,68,.4)',warn:'rgba(245,158,11,.4)',info:'rgba(99,102,241,.4)'};
+    el.style.borderColor=cols[type]||'var(--bs)';el.classList.add('show');
+    clearTimeout(_tt);_tt=setTimeout(()=>el.classList.remove('show'),4500);
+}
+function showErrorPanel(title,detail){
+    let p=document.getElementById('errPanel');
+    if(!p){p=document.createElement('div');p.id='errPanel';
+        p.style.cssText='position:fixed;bottom:72px;right:20px;z-index:1001;max-width:500px;width:calc(100vw - 40px);'+
+            'background:var(--bg2);border:1px solid rgba(239,68,68,.5);border-radius:10px;padding:14px 16px;font-size:.73rem;color:#fca5a5;box-shadow:0 8px 28px var(--sh);';
+        document.body.appendChild(p);}
+    p.innerHTML='<div style="display:flex;align-items:flex-start;justify-content:space-between;gap:8px;margin-bottom:8px;">'+
+        '<strong style="color:#f87171;">❌ '+escHtml(title)+'</strong>'+
+        '<button onclick="this.parentElement.parentElement.style.display=\'none\'" style="background:none;border:none;cursor:pointer;color:var(--tm);font-size:1rem;padding:0;">✕</button></div>'+
+        '<pre style="font-size:.62rem;color:var(--tm);white-space:pre-wrap;word-break:break-all;background:var(--inp);border-radius:5px;padding:7px;max-height:160px;overflow-y:auto;margin:0;">'+escHtml(detail)+'</pre>';
+    p.style.display='block';
+}
+</script>
+</body>
+</html>
